@@ -4,8 +4,10 @@ import pubsub
 class Controller(object):
     def __init__(self, model):
         self.model = model
+        pubsub.subscribe('PLAYER_INPUT', self.handle_events)
 
-    def run(self):
-        pubsub.publish('OUTPUT', self.model.data, test='Test')
-        pubsub.publish('DISCONNECT')
-        pubsub.publish('OUTPUT', 'This should not display')
+    def handle_events(self, event):
+        pass
+
+    def update(self):
+        pubsub.publish('DISPLAY', self.model.data)

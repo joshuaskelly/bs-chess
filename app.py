@@ -1,8 +1,13 @@
 import controller
 import model
-import view
+
+from views import consoleview
 
 c = controller.Controller(model.Model())
-v = view.View()
+v = consoleview.ConsoleView()
 
-c.run()
+running = True
+
+while running:
+    c.update()
+    v.update()
