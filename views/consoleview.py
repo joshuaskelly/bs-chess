@@ -13,11 +13,13 @@ class ConsoleView(object):
         self.running = False
         self.buffer = ''
         self._buffer_lock = threading.Lock()
+        self.is_dirty = True
 
     def output(self, message):
         # Update the output buffer
         with self._buffer_lock:
             self.buffer = message
+            self.is_dirty = True
 
     def start(self):
         if self.running:
@@ -38,9 +40,14 @@ class ConsoleView(object):
 
     def run(self):
         while self.running:
-            with self._buffer_lock:
-                print(self.buffer)
+            if self.is_dirty:
+                with self._buffer_lock:
+                    row = [8, 7, 6, 5, 4, 3, 2, 1]
+                    for i in range(0, 64, 8):
+                        print(str(row.pop(0)) + self.buffer[i:i+8])
+                    print(' abcdefgh')
 
-            evt = PlayerInputEvent()
-            evt.message = input('Enter move: ')
-            pubsub.publish('PLAYER_INPUT', evt)
+                evt = PlayerInputEvent()
+                evt.move = input('Enter move: ')
+                pubsub.publish('PLAYER_INPUT', evt)
+                self.is_dirty = False
