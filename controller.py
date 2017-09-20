@@ -10,10 +10,13 @@ class Controller(object):
         self.worker_thread = None
         self.running = False
         self.is_dirty = True
+        self.event_queue = []
+        self._event_queue_lock = threading.Lock()
 
     def handle_events(self, event):
-        # TODO: Make this thread safe
         self.is_dirty = True
+        with self._event_queue_lock:
+            self.event_queue.append(event)
 
     def start(self):
         if self.running:
@@ -32,8 +35,18 @@ class Controller(object):
         self.running = False
         worker.join(timeout)
 
+    def get_events(self):
+        with self._event_queue_lock:
+            result = self.event_queue
+            self.event_queue = []
+
+        return result
+
     def run(self):
         while self.running:
+            for event in self.get_events():
+                pass
+
             if self.is_dirty:
                 pubsub.publish('DISPLAY', self.model.data)
                 self.is_dirty = False

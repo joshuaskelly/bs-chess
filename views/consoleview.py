@@ -12,11 +12,12 @@ class ConsoleView(object):
         self.worker_thread = None
         self.running = False
         self.buffer = ''
+        self._buffer_lock = threading.Lock()
 
     def output(self, message):
         # Update the output buffer
-        # TODO: Make this thread safe
-        self.buffer = message
+        with self._buffer_lock:
+            self.buffer = message
 
     def start(self):
         if self.running:
@@ -37,7 +38,9 @@ class ConsoleView(object):
 
     def run(self):
         while self.running:
-            print(self.buffer)
+            with self._buffer_lock:
+                print(self.buffer)
+
             evt = PlayerInputEvent()
             evt.message = input('Enter move: ')
             pubsub.publish('PLAYER_INPUT', evt)
