@@ -4,6 +4,9 @@
 .vs
 /vs
 
+# Ignore cfg files
+**/*.cfg
+
 # Ignore OS artifacts
 .DS_Store
 

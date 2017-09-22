@@ -5,10 +5,12 @@ import pubsub
 
 from chess.variants import debug as current_variant
 
+
 class Controller(object):
     def __init__(self, model):
         self.model = model
         pubsub.subscribe('PLAYER_INPUT', self.receive_events)
+        pubsub.subscribe('QUIT', self.on_quit)
         self.worker_thread = None
         self.running = False
         self.is_dirty = True
@@ -23,6 +25,9 @@ class Controller(object):
         """
         with self._event_queue_lock:
             self.event_queue.append(event)
+
+    def on_quit(self):
+        self.running = False
 
     def start(self):
         if self.running:
@@ -93,3 +98,5 @@ class Controller(object):
             for event in self.get_events():
                 self.handle_player_input(event)
                 self.is_dirty = True
+
+        self.worker_thread.join()
