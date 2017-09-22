@@ -17,6 +17,11 @@ class TwitchChatInputView(object):
         self._buffer = ''
         self._buffer_lock = threading.Lock()
 
+        pubsub.subscribe('QUIT', self.on_quit)
+
+    def on_quit(self):
+        self._running = False
+
     def start(self):
         if self._running:
             return

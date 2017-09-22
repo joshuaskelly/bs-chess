@@ -5,13 +5,55 @@ import tdl
 
 import pubsub
 
+ROOK = chr(128)
+KNIGHT = chr(129)
+BISHOP = chr(130)
+QUEEN = chr(131)
+KING = chr(132)
+PAWN = chr(133)
+
+
+def char_to_semigraphic(char):
+    """Converts a char to a special semigraphic character.
+
+    char: A string. Should be in 'rnbqkpRNBQKP '
+
+    Returns: A string mapping to the semigraphic representing the given chess
+        piece. Will return a single space if no appropriate mapping can be
+        found.
+    """
+    if char.upper() == 'R':
+        return ROOK
+    elif char.upper() == 'N':
+        return KNIGHT
+    elif char.upper() == 'B':
+        return BISHOP
+    elif char.upper() == 'Q':
+        return QUEEN
+    elif char.upper() == 'K':
+        return KING
+    elif char.upper() == 'P':
+        return PAWN
+
+    return ' '
+
+
+class Colors(object):
+    WHITE = 255, 255, 255
+    BLACK = 0, 0, 0
+    LIGHT_GREY = 192, 192, 192
+    GREY = 128, 128, 128
+    DARK_GREY = 32, 32, 32
+
 
 class TDLView(object):
+    """TDL view implementation"""
     def __init__(self):
         self._worker_thread = None
         self._running = False
         self._buffer = ''
         self._buffer_lock = threading.Lock()
+
         pubsub.subscribe('DISPLAY', self.output)
 
     def output(self, data):
@@ -55,31 +97,28 @@ class TDLView(object):
 
             for event in tdl.event.get():
                 if event.type == 'QUIT':
+                    pubsub.publish('QUIT')
                     self._running = False
-                    self.join()
 
     def draw(self, console):
         win = tdl.Window(console, 0, 0, 1, 10)
-        win.draw_str(0, 0, ' 87654321')
+        win.draw_str(0, 0, ' 87654321', Colors.LIGHT_GREY)
         win = tdl.Window(console, 0, 9, 10, 1)
-        win.draw_str(0, 0, ' abcdefgh')
+        win.draw_str(0, 0, ' abcdefgh', Colors.LIGHT_GREY)
         win = tdl.Window(console, 1, 1, 8, 8)
 
         for i, p in enumerate(self._buffer):
             row = i // 8
             col = i % 8
 
-            bg = 192, 192, 192
-
+            # Set square color
+            bg = Colors.LIGHT_GREY
             if (i + row) % 2:
-                bg = 128, 128, 128
+                bg = Colors.GREY
 
-            fg = 255, 255, 255
-
+            # Set piece color
+            fg = Colors.WHITE
             if p.islower():
-                fg = 32, 32, 32
+                fg = Colors.DARK_GREY
 
-            if p == '.':
-                p = ' '
-
-            win.draw_str(col, row, p, fg, bg)
+            win.draw_str(col, row, char_to_semigraphic(p), fg, bg)

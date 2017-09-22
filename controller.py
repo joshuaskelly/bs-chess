@@ -9,13 +9,14 @@ from chess.variants import debug as current_variant
 class Controller(object):
     def __init__(self, model):
         self.model = model
-        pubsub.subscribe('PLAYER_INPUT', self.receive_events)
-        pubsub.subscribe('QUIT', self.on_quit)
         self.worker_thread = None
         self.running = False
         self.is_dirty = True
         self.event_queue = []
         self._event_queue_lock = threading.Lock()
+
+        pubsub.subscribe('PLAYER_INPUT', self.receive_events)
+        pubsub.subscribe('QUIT', self.on_quit)
 
     def receive_events(self, event):
         """Callback for pubsub notifications. This will queue up events
@@ -98,5 +99,3 @@ class Controller(object):
             for event in self.get_events():
                 self.handle_player_input(event)
                 self.is_dirty = True
-
-        self.worker_thread.join()
