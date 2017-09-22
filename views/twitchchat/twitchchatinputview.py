@@ -65,4 +65,13 @@ class TwitchChatInputView(object):
                         if re.match('[a-h][1-8][a-h][1-8]', move):
                             evt = events.PlayerInputEvent()
                             evt.move = move.lower()
+                            evt.player_name = event.nickname
+
+                            hex_color = event.tags['color'].strip('#')
+                            r = int(hex_color[0:2], 16)
+                            g = int(hex_color[2:4], 16)
+                            b = int(hex_color[4:6], 16)
+
+                            evt.player_color = r, g, b
+
                             pubsub.publish('PLAYER_INPUT', evt)

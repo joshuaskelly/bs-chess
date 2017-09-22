@@ -15,7 +15,7 @@ class ConsoleView(object):
         self._buffer_lock = threading.Lock()
         self.is_dirty = True
 
-    def output(self, message):
+    def output(self, message, move_history):
         # Update the output buffer
         with self._buffer_lock:
             self.buffer = message

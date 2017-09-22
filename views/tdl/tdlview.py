@@ -52,13 +52,15 @@ class TDLView(object):
         self._worker_thread = None
         self._running = False
         self._buffer = ''
+        self._move_history = ''
         self._buffer_lock = threading.Lock()
 
         pubsub.subscribe('DISPLAY', self.output)
 
-    def output(self, data):
+    def output(self, data, move_history):
         with self._buffer_lock:
             self._buffer = data
+            self._move_history = move_history
 
     def start(self):
         if self._running:
@@ -88,7 +90,7 @@ class TDLView(object):
 
         # Init TDL
         tdl.set_font(font_path)
-        console = tdl.init(10, 10, 'BS.CHESS()', renderer='GLSL')
+        console = tdl.init(10, 21, 'BS.CHESS()', renderer='GLSL')
 
         while self._running:
             console.clear()
@@ -101,10 +103,15 @@ class TDLView(object):
                     self._running = False
 
     def draw(self, console):
+        # Draw y-axis legend
         win = tdl.Window(console, 0, 0, 1, 10)
         win.draw_str(0, 0, ' 87654321', Colors.LIGHT_GREY)
+
+        # Draw x-axis legend
         win = tdl.Window(console, 0, 9, 10, 1)
         win.draw_str(0, 0, ' abcdefgh', Colors.LIGHT_GREY)
+
+        # Draw board
         win = tdl.Window(console, 1, 1, 8, 8)
 
         for i, p in enumerate(self._buffer):
@@ -122,3 +129,33 @@ class TDLView(object):
                 fg = Colors.DARK_GREY
 
             win.draw_str(col, row, char_to_semigraphic(p), fg, bg)
+
+        # Draw move history
+        win = tdl.Window(console, 0, 11, 10, 10)
+        for i, history in enumerate(reversed(self._move_history[-10:])):
+            move = history.move
+
+            x, y = move
+            row = 7 - (x // 8) + 1
+            col = x % 8
+            col = chr(ord('a') + col)
+            x = '{}{}'.format(col, row)
+
+            row = 7 - (y // 8) + 1
+            col = y % 8
+            col = chr(ord('a') + col)
+            y = '{}{}'.format(col, row)
+
+            move = '{}{}'.format(x, y)
+
+            name = history.player_name
+            fg = history.player_color
+
+            move_color = Colors.WHITE
+
+            if not history.valid:
+                move_color = Colors.GREY
+                fg = tuple(map(lambda x: int(x / 2), fg))
+
+            win.draw_str(0, i, move, fg=move_color)
+            win.draw_str(4, i, name[:6], fg=fg)
