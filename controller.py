@@ -4,7 +4,7 @@ import threading
 import model
 import pubsub
 
-from chess.variants import debug as current_variant
+from chess.variants import standard as current_variant
 
 
 class Controller(object):
