@@ -151,6 +151,9 @@ class TDLView(object):
             name = history.player_name
             fg = history.player_color
 
+            if fg == Colors.WHITE:
+                fg = Colors.LIGHT_GREY
+
             move_color = Colors.WHITE
 
             if not history.valid:

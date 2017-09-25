@@ -67,7 +67,12 @@ class TwitchChatInputView(object):
                             evt.move = move.lower()
                             evt.player_name = event.nickname
 
-                            hex_color = event.tags['color'].strip('#')
+                            player_color = event.tags['color']
+
+                            if not player_color:
+                                player_color = '#FFFFFF'
+
+                            hex_color = player_color.strip('#')
                             r = int(hex_color[0:2], 16)
                             g = int(hex_color[2:4], 16)
                             b = int(hex_color[4:6], 16)
