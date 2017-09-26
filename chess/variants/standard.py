@@ -21,6 +21,14 @@ directions = {
 valid_square = 'PRNBQKprnbqk.'
 
 
+def valid_destination(piece, dest):
+    if piece.upper() == piece:
+        return dest in 'prnbqk.'
+
+    else:
+        return dest in 'PRNBQK.'
+
+
 def translate_index(index):
     row = (index // 10) - 2
     col = (index % 10) - 1
@@ -42,12 +50,17 @@ def generate_moves(board_state):
         if square in '. ':
             continue
 
+        # Check all possible directions
         for d in directions[square]:
+            # Check all squares along the given direction
             for r in range(1, 8):
                 dest = i + (d * r)
 
                 # Check to see if the move is off the board
-                if board[dest] not in valid_square:
+                if not valid_destination(square, board[dest]):
                     break
 
                 yield translate_index(i), translate_index(dest)
+
+                if square.upper() not in 'QBR':
+                    break
