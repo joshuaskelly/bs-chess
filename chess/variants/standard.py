@@ -60,7 +60,45 @@ def generate_moves(board_state):
                 if not valid_destination(square, board[dest]):
                     break
 
+                # Special case: Pawns only move diagonal when capturing
+                if square == 'P' and d != N:
+                    if board[dest] == '.':
+                        break
+
+                if square == 'p' and d != S:
+                    if board[dest] == '.':
+                        break
+
+                # Special case: Pawns can only capture diagonally
+                if square == 'P' and d == N:
+                    if board[dest] in 'kqbnrp':
+                        break
+
+                if square == 'p' and d == S:
+                    if board[dest] in 'KQBNRP':
+                        break
+
                 yield translate_index(i), translate_index(dest)
 
+                # Special case: Pawns can move two square for first move
+                if square == 'P' and 80 <= i < 90 and d == N:
+                    dest = i + (d * 2)
+
+                    # Don't capture on a two square move
+                    if board[dest] in 'kqbnrp':
+                        break
+
+                    yield translate_index(i), translate_index(dest)
+
+                if square == 'p' and 30 <= i < 40 and d == S:
+                    dest = i + (d * 2)
+
+                    # Don't capture on a two square move
+                    if board[dest] in 'KQBNRP':
+                        break
+
+                    yield translate_index(i), translate_index(dest)
+
+                # Stop pieces that only move once
                 if square.upper() not in 'QBR':
                     break
