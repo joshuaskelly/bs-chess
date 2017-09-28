@@ -4,6 +4,7 @@ import threading
 import tdl
 
 import pubsub
+from views import view
 
 ROOK = chr(128)
 KNIGHT = chr(129)
@@ -46,40 +47,12 @@ class Colors(object):
     DARK_GREY = 32, 32, 32
 
 
-class TDLView(object):
-    """TDL view implementation"""
+class TDLView(view.View):
     def __init__(self):
-        self._worker_thread = None
-        self._running = False
-        self._buffer = ''
-        self._move_history = ''
-        self._buffer_lock = threading.Lock()
+        super().__init__()
+        self.console = None
 
-        pubsub.subscribe('DISPLAY', self.output)
-
-    def output(self, data, move_history):
-        with self._buffer_lock:
-            self._buffer = data
-            self._move_history = move_history
-
-    def start(self):
-        if self._running:
-            return
-
-        self._running = True
-        self._worker_thread = threading.Thread(target=self.run)
-        self._worker_thread.start()
-
-    def join(self, timeout=0):
-        if not self._worker_thread:
-            return
-
-        worker = self._worker_thread
-        self._worker_thread = None
-        self._running = False
-        worker.join(timeout)
-
-    def run(self):
+    def init(self):
         working_dir = os.path.dirname(__file__)
 
         # Get path to font file
@@ -90,19 +63,23 @@ class TDLView(object):
 
         # Init TDL
         tdl.set_font(font_path)
-        console = tdl.init(10, 21, 'BS.CHESS()', renderer='GLSL')
+        self.console = tdl.init(10, 21, 'BS.CHESS()', renderer='GLSL')
 
-        while self._running:
-            console.clear()
-            self.draw(console)
-            tdl.flush()
+    def deinit(self):
+        pass
 
-            for event in tdl.event.get():
-                if event.type == 'QUIT':
-                    pubsub.publish('QUIT')
-                    self._running = False
+    def draw(self, board_data, move_history):
+        self.console.clear()
+        self._draw_internal(self.console, board_data, move_history)
+        tdl.flush()
 
-    def draw(self, console):
+    def update(self, time):
+        for event in tdl.event.get():
+            if event.type == 'QUIT':
+                pubsub.publish('QUIT')
+                self._running = False
+
+    def _draw_internal(self, console, board_data, move_history):
         # Draw y-axis legend
         win = tdl.Window(console, 0, 0, 1, 10)
         win.draw_str(0, 0, ' 87654321', Colors.LIGHT_GREY)
@@ -114,7 +91,7 @@ class TDLView(object):
         # Draw board
         win = tdl.Window(console, 1, 1, 8, 8)
 
-        for i, p in enumerate(self._buffer):
+        for i, p in enumerate(board_data):
             row = i // 8
             col = i % 8
 
@@ -132,7 +109,7 @@ class TDLView(object):
 
         # Draw move history
         win = tdl.Window(console, 0, 11, 10, 10)
-        for i, history in enumerate(reversed(self._move_history[-10:])):
+        for i, history in enumerate(reversed(move_history[-10:])):
             move = history.move
 
             x, y = move

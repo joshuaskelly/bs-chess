@@ -16,7 +16,7 @@ class View(object):
 
         pubsub.subscribe('DISPLAY', self._update_board_data)
 
-    def draw(self, board_data):
+    def draw(self, board_data, move_history):
         """Override this to render out the board state"""
 
     def update(self, time):
@@ -67,7 +67,9 @@ class View(object):
         last_time = time.time()
 
         while self._running:
-            self.draw(self._board_data)
+            with self._board_data_lock:
+                self.draw(self._board_data, self._move_history)
+
             self.update(time.time() - last_time)
             last_time = time.time()
 
