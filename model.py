@@ -19,3 +19,6 @@ class Model(object):
                     "RNBQKBNR"
 
         self.move_history = []
+
+    def add_history(self, move, valid, player_name='player', player_color=None):
+        self.move_history.append(MoveHistoryItem(move, valid, player_name, player_color))

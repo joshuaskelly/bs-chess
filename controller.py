@@ -1,7 +1,6 @@
 import re
 import threading
 
-import model
 import pubsub
 
 from chess.variants import standard as current_variant
@@ -65,8 +64,8 @@ class Controller(object):
         self.model.data = self.model.data[:x] + '.' + self.model.data[x+1:]
         self.model.data = self.model.data[:y] + piece + self.model.data[y+1:]
 
-    def record_move(self, history):
-        self.model.move_history.append(history)
+    def record_move(self, move, valid, player_name, player_color):
+        self.model.add_history(move, valid, player_name, player_color)
 
     def move_to_coords(self, move):
         start = move[:2]
@@ -91,15 +90,13 @@ class Controller(object):
             return
 
         move = self.move_to_coords(move)
-        history = model.MoveHistoryItem(move, True, event.player_name, event.player_color)
+        move_valid = False
 
         if move in current_variant.generate_moves(self.model.data):
             self.perform_move(move)
+            move_valid = True
 
-        else:
-            history.valid = False
-
-        self.record_move(history)
+        self.record_move(move, move_valid, event.player_name, event.player_color)
 
     def run(self):
         while self.running:
