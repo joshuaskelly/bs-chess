@@ -1,0 +1,1 @@
+from .toastview import ToastView as View
