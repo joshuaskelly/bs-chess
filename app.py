@@ -2,22 +2,25 @@ import time
 
 import controller
 import model
-from views.tdl import View as TdlView
+#from views.tdl import View
+from views.pyglet import View
 from views.twitchchat import View as TwitchView
 
+v = View()
 c = controller.Controller(model.Model())
-v = TdlView()
 tc = TwitchView()
 
-c.start()
 v.start()
+c.start()
 tc.start()
+
+
 
 try:
     while True:
         time.sleep(1)
 
 except KeyboardInterrupt:
-    c.join()
     v.join()
+    c.join()
     tc.join()
