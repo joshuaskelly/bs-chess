@@ -39,7 +39,7 @@ class TwitchChatInputView(view.View):
         self.observer.join_channel(channel)
 
     def deinit(self):
-        self.observer.join()
+        self.observer.stop()
 
     def update(self, time):
         for event in self.observer.get_events():
